@@ -1,19 +1,37 @@
-import express from "express"
-import { addLecture, createCourse, getAllCourses } from "../controllers/courseController.js";
-import {getCourseLectures } from "../controllers/userController.js";
+import express from "express";
+import {
+  addLecture,
+  createCourse,
+  deleteCourse,
+  deleteLecture,
+  getAllCourses,
+  getCourseLectures,
+} from "../controllers/courseController.js";
+import {
+  authorizeAdmin,
+  isAuthenticated,
+  authorizeSubscribers,
+} from "../middlewares/auth.js";
 import singleUpload from "../middlewares/multer.js";
-import { authorizeAdmin, isAuthenticated } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-// Get all courses without lectures
+// Get All courses without lectures
 router.route("/courses").get(getAllCourses);
 
 // create new course - only admin
-router.route("/createCourse").post(isAuthenticated, authorizeAdmin, singleUpload ,createCourse);
+router
+  .route("/createcourse")
+  .post(isAuthenticated, authorizeAdmin, singleUpload, createCourse);
 
-// Add lecture, delete course, get course details 
-router.route("/course/:id").get(getCourseLectures).post(singleUpload, addLecture);
+// Add lecture, Delete Course, Get Course Details
+router
+  .route("/course/:id")
+  .get(isAuthenticated, authorizeSubscribers, getCourseLectures)
+  .post(isAuthenticated, authorizeAdmin, singleUpload, addLecture)
+  .delete(isAuthenticated, authorizeAdmin, deleteCourse);
 
-// delete lecture
+// Delete Lecture
+router.route("/lecture").delete(isAuthenticated, authorizeAdmin, deleteLecture);
+
 export default router;
